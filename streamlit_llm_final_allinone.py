@@ -1,61 +1,46 @@
-# ==========================================
-# All-in-One LLM Auto ML Streamlit App
-# Compatible with LangChain v1+ and Pydantic strict
-# ==========================================
 import streamlit as st
 import pandas as pd
 import numpy as np
-from dotenv import load_dotenv
-import os
-from langchain_groq import ChatGroq
-from langchain.prompts.prompt import PromptTemplate
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
 from fpdf import FPDF
 import joblib
+from dotenv import load_dotenv
+import os
+import openai
 
 # -------------------------
-# Load Environment
+# Load environment
 # -------------------------
 load_dotenv()
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-
-# -------------------------
-# Init LLM
-# -------------------------
-llm = ChatGroq(
-    temperature=0.7,
-    model_name="llama-3.3-70b-versatile",
-    groq_api_key=GROQ_API_KEY
-)
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+openai.api_key = OPENAI_API_KEY
 
 # -------------------------
 # Helper functions
 # -------------------------
 def run_llm(prompt_template: str, data: pd.DataFrame):
+    """
+    Jalankan LLM via OpenAI API
+    """
     if not isinstance(prompt_template, str) or len(prompt_template.strip()) == 0:
         raise ValueError("prompt_template harus string yang valid dan tidak kosong")
     if not isinstance(data, pd.DataFrame) or data.empty:
         raise ValueError("data harus DataFrame yang tidak kosong")
 
-    # Pastikan placeholder {data} ada
     if "{data}" not in prompt_template:
         prompt_template = "{data}\n" + prompt_template
 
-    # Buat PromptTemplate dengan validasi
-    try:
-        prompt = PromptTemplate(
-            input_variables=["data"],
-            template=prompt_template
-        )
-    except Exception as e:
-        st.error(f"Error membuat PromptTemplate: {e}")
-        return None
+    formatted_prompt = prompt_template.replace("{data}", data.head(20).to_string(index=False))
 
-    # Format prompt
-    formatted_prompt = prompt.format(data=data.to_string(index=False))
-    return llm.invoke(formatted_prompt).content
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",  
+        messages=[{"role": "user", "content": formatted_prompt}],
+        temperature=0.7,
+        max_tokens=3000
+    )
+    return response.choices[0].message.content
 
 def clean_python_code(raw_code: str):
     return raw_code.strip().strip("```").replace("python", "").strip()
@@ -132,7 +117,10 @@ st.dataframe(df_train.head(100))
 # Target & features
 target_col = st.selectbox("Pilih kolom Target", df_train.columns)
 feature_cols = st.multiselect("Pilih fitur (kosong = semua kecuali target)", [c for c in df_train.columns if c != target_col])
-df_train_features = df_train[[target_col] + feature_cols] if feature_cols else df_train.copy()
+if feature_cols:
+    df_train_features = df_train[feature_cols + [target_col]]
+else:
+    df_train_features = df_train.copy()
 
 # Downsample for LLM prompt
 df_sample = df_train_features.sample(n=min(50000, len(df_train_features)), random_state=42) if len(df_train_features) > 50000 else df_train_features.copy()
@@ -155,7 +143,7 @@ Buat pipeline classification untuk dataset ini dengan kolom Target = {target_col
 - Tulis insight narasi model terbaik & ranking
 - Simpan hasil ke df_results, insights, pipeline_best, y_proba, figure(s)
 - Gunakan sample {len(df_sample)} row untuk prompt LLM
-{df_sample.head(5)}
+{{data}}
 """
 user_prompt = st.text_area("Custom prompt for LLM", value=default_prompt, height=300)
 
@@ -222,14 +210,6 @@ if st.button("Generate & Run All-in-One Pipeline"):
         st.markdown(f'<a href="data:application/pdf;base64,{b64_pdf}" download="ML_Report.pdf">Download PDF Report</a>', unsafe_allow_html=True)
         
         st.success("✅ All-in-One Pipeline berhasil dijalankan!")
-
-
-
-
-
-
-
-
 
 
 
