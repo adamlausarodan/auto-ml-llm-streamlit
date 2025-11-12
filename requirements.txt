@@ -5,6 +5,7 @@ matplotlib
 fpdf
 joblib
 python-dotenv
+langchain>=1.0.0  # pastikan versi terbaru
 langchain-groq
 xgboost
 scikit-learn
