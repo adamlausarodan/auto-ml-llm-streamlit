@@ -4,8 +4,7 @@ import numpy as np
 from dotenv import load_dotenv
 import os
 from langchain_groq import ChatGroq
-from langchain_core.prompts import ChatPromptTemplate
-from langchain.prompts import PromptTemplate
+from langchain.prompts.prompt import PromptTemplate
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
@@ -31,18 +30,11 @@ llm = ChatGroq(
 # Helper functions
 # -------------------------
 def run_llm(prompt_template: str, data: pd.DataFrame):
-    """Format prompt dengan data dan invoke LLM."""
-    
-    # Buat PromptTemplate
     prompt = PromptTemplate(
         input_variables=["data"],
         template=prompt_template
     )
-
-    # Format template dengan data
     formatted_prompt = prompt.format(data=data.to_string(index=False))
-
-    # Panggil LLM
     return llm.invoke(formatted_prompt).content
 
 def clean_python_code(raw_code: str):
@@ -213,6 +205,7 @@ if st.button("Generate & Run All-in-One Pipeline"):
         st.markdown(f'<a href="data:application/pdf;base64,{b64_pdf}" download="ML_Report.pdf">Download PDF Report</a>', unsafe_allow_html=True)
         
         st.success("✅ All-in-One Pipeline berhasil dijalankan!")
+
 
 
 
