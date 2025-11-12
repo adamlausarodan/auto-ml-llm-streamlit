@@ -30,16 +30,22 @@ llm = ChatGroq(
 # Helper functions
 # -------------------------
 def run_llm(prompt_template: str, data: pd.DataFrame):
-    if not isinstance(prompt_template, str):
-        raise ValueError("prompt_template must be a string")
-    if data.empty:
-        raise ValueError("data cannot be empty")
+    # Validasi input
+    if not isinstance(prompt_template, str) or len(prompt_template.strip()) == 0:
+        raise ValueError("prompt_template harus string yang valid dan tidak kosong")
+    if not isinstance(data, pd.DataFrame) or data.empty:
+        raise ValueError("data harus DataFrame yang tidak kosong")
 
+    # Buat PromptTemplate
     prompt = PromptTemplate(
-        input_variables=["data"],
-        template=prompt_template  # pastikan prompt_template adalah string
+        input_variables=["data"],  # harus sama dengan nama placeholder di template
+        template=prompt_template
     )
+
+    # Format prompt
     formatted_prompt = prompt.format(data=data.to_string(index=False))
+
+    # Jalankan LLM
     return llm.invoke(formatted_prompt).content
 
 def clean_python_code(raw_code: str):
@@ -210,6 +216,7 @@ if st.button("Generate & Run All-in-One Pipeline"):
         st.markdown(f'<a href="data:application/pdf;base64,{b64_pdf}" download="ML_Report.pdf">Download PDF Report</a>', unsafe_allow_html=True)
         
         st.success("✅ All-in-One Pipeline berhasil dijalankan!")
+
 
 
 
