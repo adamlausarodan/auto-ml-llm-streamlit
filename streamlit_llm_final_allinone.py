@@ -4,7 +4,7 @@ import numpy as np
 from dotenv import load_dotenv
 import os
 from langchain_groq import ChatGroq
-from langchain.prompts import PromptTemplate
+from langchain.prompts.prompt import PromptTemplate
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
@@ -201,3 +201,4 @@ if st.button("Generate & Run All-in-One Pipeline"):
         st.markdown(f'<a href="data:application/pdf;base64,{b64_pdf}" download="ML_Report.pdf">Download PDF Report</a>', unsafe_allow_html=True)
         
         st.success("✅ All-in-One Pipeline berhasil dijalankan!")
+
