@@ -1,13 +1,10 @@
+openai
 streamlit
 pandas
 numpy
 matplotlib
 fpdf
 joblib
-python-dotenv
-langchain>=1.0.0
-langchain-groq
-xgboost
-scikit-learn
-openpyxl
 xlsxwriter
+python-dotenv
+scikit-learn
