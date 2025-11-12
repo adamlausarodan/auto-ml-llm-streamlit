@@ -1,0 +1,12 @@
+streamlit
+pandas
+numpy
+matplotlib
+fpdf
+joblib
+python-dotenv
+langchain-groq
+xgboost
+scikit-learn
+openpyxl
+xlsxwriter
